@@ -19,9 +19,6 @@ class Pipes extends CI_Controller {
 		$this->data['pipes'] = array();
 		$this->data['search'] = $this->input->get('search');
 		
-		// Do a pipes lookup
-		$pipes = preg_grep("/".$this->data['search']."(.+)\.pipe/", scandir(FCPATH.'pipestore'));
-		
 		// Respond to both JSON and HTML
 		if (isset($_SERVER['HTTP_ACCEPT']) && $_SERVER['HTTP_ACCEPT'] == 'application/json') {
 			$this->output->set_header('Content-Type: application/json');
