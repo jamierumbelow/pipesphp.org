@@ -12,9 +12,20 @@
  **/
 
 class Api extends REST_Controller {
+	public function __construct() {
+		parent::__construct();
+		
+		$this->load->model('pipe_model', 'pipe');
+	}
+	
 	public function pipe_get() {
-		// Setup some variables
-		$this->data['pipes'] = array();
-		$this->data['search'] = $this->input->get('search');
+		// Setup the search
+		$this->pipe->search($this->input->get('search'));
+		
+		// Get the pipes
+		$pipes = $this->pipe->get_all() ?: array();
+		
+		// Return the pipes
+		$this->response($pipes);
 	}
 }
