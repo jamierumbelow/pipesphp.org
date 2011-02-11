@@ -11,9 +11,9 @@
  * @license MIT License
  **/
 
-class Pipes extends MY_Controller {	
-	public function index() {
-		// Setup some vars
+class Api extends REST_Controller {
+	public function pipe_get() {
+		// Setup some variables
 		$this->data['pipes'] = array();
 		$this->data['search'] = $this->input->get('search');
 	}
