@@ -1,5 +1,39 @@
 <?php  if ( ! defined('BASEPATH')) exit('No direct script access allowed');
 
+/**
+ * Native Auto-load CI2
+ *
+ * Adapted Modular Separation - PHP5
+ * @copyright 	Copyright (c) Wiredesignz 2010-03-01
+ * @version 	2.3
+ * @author		Phil Sturgeon
+ * @link		http://github.com/philsturgeon/codeigniter-modular-separation/blob/master/MY_Router.php ::164
+ * 
+ * @modified	Dean Howe <http://dea.n-howe.com>
+ *
+ * Nothing to do with config/autoload.php, this allows PHP autoload to look
+ * for base controllers and some third-party libraries.
+ */
+ 
+function __autoload($class)
+{
+ /* don't autoload CI_ or MY_ prefixed classes */
+		if (strstr($class, 'CI_') OR strstr($class, 'MY_'))
+		{
+			return;
+		}
+
+		if (is_file($location = APPPATH . 'core/' . $class . EXT))
+		{
+			include_once $location;
+		}
+
+		else if (is_file($location = APPPATH . 'libraries/' . $class . EXT))
+		{
+			include_once $location;
+		}
+}
+
 /*
 |--------------------------------------------------------------------------
 | Base Site URL
