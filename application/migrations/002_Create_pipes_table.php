@@ -4,6 +4,7 @@ class Migration_create_pipes_table extends Migration {
 	public function up() {
 		$this->dbforge->add_field(array(
 			'id' 			=> array('type' => 'INT', 'auto_increment' => TRUE, 'unsigned' => TRUE),
+			'user_id'		=> array('type' => 'INT'),
 			'name'			=> array('type' => 'VARCHAR', 'constraint' => 160),
 			'slug'			=> array('type' => 'VARCHAR', 'constraint' => 160),
 			'description'	=> array('type' => 'TEXT'),
@@ -16,6 +17,7 @@ class Migration_create_pipes_table extends Migration {
 		
 		$this->dbforge->add_field(array(
 			'pipe_id' 		=> array('type' => 'INT'),
+			'version'		=> array('type' => 'VARCHAR', 'constraint' => 50),
 			'pipespec'		=> array('type' => 'TEXT'),
 			'downloads'		=> array('type' => 'INT'),
 			'created_at'	=> array('type' => 'DATETIME')
