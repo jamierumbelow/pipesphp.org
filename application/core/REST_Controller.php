@@ -186,6 +186,7 @@ class REST_Controller extends CI_Controller {
 		if (empty($data))
     	{
     		$http_code = 404;
+			$output = $data;
     	}
 
 		else
