@@ -12,13 +12,15 @@
  **/
 
 // Load Pipes
-require 'pipes.php';
+require_once '/Users/jamierumbelow/Sites/Os/pipes/pipes.php';
 
 class Api extends REST_Controller {
 	public function __construct() {
 		parent::__construct();
 		
 		$this->load->model('pipe_model', 'pipe');
+		$this->load->model('version_model', 'version');
+		$this->load->model('user_model', 'user');
 	}
 	
 	/**
@@ -58,14 +60,20 @@ class Api extends REST_Controller {
 	public function pipes_post() {
 		// Get the POST vars for this request
 		$pipe = $this->input->post('pipe');
-		$username = $this->input->post('username');
+		$email = $this->input->post('email');
 		$password = $this->input->post('password');
 		
 		// First of all, authenticate!
-		if (!$user = $this->user->authenticate($username, $password)) {
-			$this->response(array('success' => FALSE, 'error' => 'A valid username and password are required to push pipes!'), 401);
+		if (!$user = $this->user->authenticate($email, $password)) {
+			$this->response(array('success' => FALSE, 'error' => 'A valid email and password are required to push pipes!'), 401);
 			exit;
-		} 
+		}
+		
+		// Secondly, do we have a pipe at all?
+		if (!$pipe) {
+			$this->response(array('success' => FALSE, 'error' => 'A valid pipe package is required'), 401);
+			exit;
+		}
 		
 		// Decode the package
 		$pipe = Pipes_Package::decode_from_string($pipe);
@@ -100,7 +108,7 @@ class Api extends REST_Controller {
 		}
 		
 		// Do we have this version?
-		if (!$this->version->get_by(array('version' => $pipe->spec->version, 'pipe_id' => $id)) {
+		if (!$this->version->get_by(array('version' => $pipe->spec->version, 'pipe_id' => $id))) {
 			// Insert this version
 			$this->version->insert(array(
 				'pipe_id' => $id,
