@@ -18,9 +18,25 @@ class Api extends REST_Controller {
 		$this->load->model('pipe_model', 'pipe');
 	}
 	
-	public function pipe_get() {
+	/**
+	 * GET /api/pipes
+	 *
+	 * Search through the list of pipes in the system
+	 *
+	 * Params:
+	 * 		- search=some-search-term
+	 *		- limit=5
+	 *
+	 * @author Jamie Rumbelow
+	 */
+	public function pipes_get() {
 		// Setup the search
 		$this->pipe->search($this->input->get('search'));
+		
+		// Limit?
+		if ($this->input->get('limit')) {
+			$this->db->limit((int)$this->input->get('limit'));
+		}
 		
 		// Get the pipes
 		$pipes = $this->pipe->get_all() ?: array();
