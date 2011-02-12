@@ -186,26 +186,22 @@ class REST_Controller extends CI_Controller {
 		if (empty($data))
     	{
     		$http_code = 404;
-			$output = $data;
     	}
 
+		// If the format method exists, call and return the output in that format
+		if (method_exists($this, '_format_'.$this->request->format))
+		{
+			// Set the correct format header
+			header('Content-type: '.$this->_supported_formats[$this->request->format]);
+
+			$formatted_data = $this->{'_format_'.$this->request->format}($data);
+			$output = $formatted_data;
+		}
+
+		// Format not supported, output directly
 		else
 		{
-			// If the format method exists, call and return the output in that format
-			if (method_exists($this, '_format_'.$this->request->format))
-			{
-				// Set the correct format header
-				header('Content-type: '.$this->_supported_formats[$this->request->format]);
-
-				$formatted_data = $this->{'_format_'.$this->request->format}($data);
-				$output = $formatted_data;
-			}
-
-			// Format not supported, output directly
-			else
-			{
-				$output = $data;
-			}
+			$output = $data;
 		}
 
 		header('HTTP/1.1: ' . $http_code);
