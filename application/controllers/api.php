@@ -59,65 +59,67 @@ class Api extends REST_Controller {
 	 */
 	public function pipes_post() {
 		// Get the POST vars for this request
-		$pipe = $this->input->post('pipe');
+		$pipe = (isset($_FILES['pipe'])) ? $_FILES['pipe']['tmp_name'] : FALSE;
 		$email = $this->input->post('email');
 		$password = $this->input->post('password');
 		
 		// First of all, authenticate!
 		if (!$user = $this->user->authenticate($email, $password)) {
-			$this->response(array('success' => FALSE, 'error' => 'A valid email and password are required to push pipes!'), 401);
+			$this->response(array('success' => FALSE, 'message' => 'A valid email and password are required to push pipes!'), 401);
 			exit;
 		}
 		
 		// Secondly, do we have a pipe at all?
 		if (!$pipe) {
-			$this->response(array('success' => FALSE, 'error' => 'A valid pipe package is required'), 401);
+			$this->response(array('success' => FALSE, 'message' => 'A valid pipe package is required'), 401);
 			exit;
 		}
 		
 		// Decode the package
-		$pipe = Pipes_Package::decode_from_string($pipe);
+		$pipe = Pipes_Package::decode_from_file($pipe);
 		
 		// Make sure the pipe's name is valid
-		if (preg_match("/[^\d\w\-\.])/", $pipe->spec->name)) {
-			$this->response(array('success' => FALSE, 'error' => 'Pipe names can only include letters, numbers, dashes, and underscores'), 400);
+		if (preg_match("/[^\d\w\-\.]/", $pipe->name)) {
+			$this->response(array('success' => FALSE, 'message' => 'Pipe names can only include letters, numbers, dashes, and underscores'), 400);
 			exit;
 		}
 		
 		// Do we have this pipe already?
-		if (!$pipedb = $this->pipe->get_by('name', $pipe->spec->name)) {
+		if (!$pipedb = $this->pipe->get_by('name', $pipe->name)) {
 			// Create it in the DB
 			$id = $this->pipe->insert(array(
-				'user_id'		=> $user,
-				'name' 			=> $pipe->spec->name,
-				'description'	=> $pipe->spec->description
+				'user_id'		=> $user->id,
+				'name' 			=> $pipe->name,
+				'description'	=> $pipe->description
 			));
 		} else {
 			// Make sure it's this user's
-			if ($this->pipe->user($user)->get_by('name', $pipe->spec->name)) {
+			if ($this->pipe->user($user->id)->get_by('name', $pipe->name)) {
 				// The description could have been updated
-				if ($pipedb->description !== $pipe->spec->description) {
+				if ($pipedb->description !== $pipe->description) {
 					$this->pipe->update($pipedb->id, array(
-						'description' => $pipe->spec->description
+						'description' => $pipe->description
 					));
 				}
 			} else {
-				$this->response(array('success' => FALSE, 'error' => 'This pipe is owned by somebody else! Please use a different name.'), 401);
+				$this->response(array('success' => FALSE, 'message' => 'This pipe is owned by somebody else! Please use a different name.'), 401);
 				exit;
 			}
+			
+			$id = $pipedb->id;
 		}
 		
 		// Do we have this version?
-		if (!$this->version->get_by(array('version' => $pipe->spec->version, 'pipe_id' => $id))) {
+		if (!$this->version->get_by(array('version' => $pipe->version, 'pipe_id' => $id))) {
 			// Insert this version
 			$this->version->insert(array(
 				'pipe_id' => $id,
-				'version' => $pipe->spec->version,
-				'pipespec' => json_encode($pipe->spec)
+				'version' => $pipe->version,
+				'pipespec' => json_encode($pipe)
 			));
 		}
 		
 		// Return a boolean, brother
-		$this->response(array('success' => TRUE, 'message' => 'Successfully released pipe! Try downloading it with `sudo pipes install '.$pipe->spec->name.'`'), 201);
+		$this->response(array('success' => TRUE, 'message' => 'Successfully released pipe! Try downloading it with `sudo pipes install '.$pipe->name.'`'), 201);
 	}
 }
