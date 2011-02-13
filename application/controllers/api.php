@@ -78,6 +78,12 @@ class Api extends REST_Controller {
 		// Decode the package
 		$pipe = Pipes_Package::decode_from_file($pipe);
 		
+		// Upload the pipe
+		if (!move_uploaded_file($_FILES['pipe']['tmp_name'], FCPATH.'pipestore/'.$pipe->full_name.'.pipe')) {
+			$this->response(array('success' => FALSE, 'message' => 'Pipe wasn\'t able to be uploaded. Please try again, and if the problem persists, please contact jamie@jamierumbelow.net'), 401);
+			exit;
+		}
+		
 		// Make sure the pipe's name is valid
 		if (preg_match("/[^\d\w\-\.]/", $pipe->name)) {
 			$this->response(array('success' => FALSE, 'message' => 'Pipe names can only include letters, numbers, dashes, and underscores'), 400);
@@ -121,5 +127,41 @@ class Api extends REST_Controller {
 		
 		// Return a boolean, brother
 		$this->response(array('success' => TRUE, 'message' => 'Successfully released pipe! Try downloading it with `sudo pipes install '.$pipe->name.'`'), 201);
+	}
+	
+	/**
+	 * GET /api/pipe
+	 *
+	 * Download a specific pipe
+	 *
+	 * Params:
+	 * 		- name=pipe-name (required)
+	 *		- version=version
+	 *
+	 * @author Jamie Rumbelow
+	 **/
+	public function pipe_get() {
+		$name 		= $this->input->get('name');
+		$version 	= $this->input->get('version');
+		
+		// We need the name
+		if (!$name) {
+			$this->response(array('success' => FALSE, 'message' => 'Pipe name is required'), 401);
+			exit;
+		}
+		
+		// Try to find the pipe
+		if (!$pipe = $this->pipe->get_by('name', $name)) {
+			$this->response(array('success' => FALSE, 'message' => 'Pipe couldn\'t be found... please check and try again'), 401);
+			exit;
+		}
+		
+		// Awesome... this version?
+		if (!$version = $this->version->get_by('version', $version)) {
+			$this->response(array('success' => FALSE, 'message' => 'This version couldn\'t be found... please check and try again'), 401);
+			exit;
+		}
+		
+		// Great. Get it from 
 	}
 }
