@@ -12,7 +12,7 @@
  **/
 
 // Load Pipes
-require_once '/Users/jamierumbelow/Sites/Os/pipes/pipes.php';
+require_once 'pipes.php';
 
 class Api extends REST_Controller {
 	public function __construct() {
