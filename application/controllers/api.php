@@ -157,11 +157,27 @@ class Api extends REST_Controller {
 		}
 		
 		// Awesome... this version?
-		if (!$version = $this->version->get_by('version', $version)) {
-			$this->response(array('success' => FALSE, 'message' => 'This version couldn\'t be found... please check and try again'), 401);
-			exit;
+		if ($version) {
+			if (!$version = $this->version->get_by('version', $version)) {
+				$this->response(array('success' => FALSE, 'message' => 'This version couldn\'t be found... please check and try again'), 401);
+				exit;
+			}
+		} else {
+			// Default version
+			$version = $this->version->latest()->get_by('pipe_id', $pipe->id);
 		}
 		
-		// Great. Get it from 
+		// Great. Get it from the pipestore...
+		$path 		= FCPATH . 'pipestore/' . $pipe->name . '-' . $version->version . '.pipe';
+		$file 		= fopen($path, 'rb');
+		$pipebin 	= fread($file, filesize($path));
+		fclose($file);
+		
+		// Set the content type and output!
+		header("Content-type: application/octet-stream");
+		echo $pipebin;
+		
+		// We're done
+		exit;
 	}
 }
