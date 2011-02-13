@@ -163,9 +163,13 @@ class Api extends REST_Controller {
 				exit;
 			}
 		} else {
-			// Default version
+			// Latest version
 			$version = $this->version->latest()->get_by('pipe_id', $pipe->id);
 		}
+		
+		// Record the download!
+		$this->version->update_by(array('pipe_id' => $pipe->id, 'version' => $version->version), array('downloads' => $version->downloads + 1));
+		$this->pipe->update($pipe->id, array('downloads' => $pipe->downloads + 1));
 		
 		// Great. Get it from the pipestore...
 		$path 		= FCPATH . 'pipestore/' . $pipe->name . '-' . $version->version . '.pipe';
